@@ -1,4 +1,3 @@
-package roucairolCaravalho;
 
 import java.io.BufferedReader;
 import java.io.DataInputStream;
@@ -55,7 +54,7 @@ public class MutexCode {
 	public static void main(String[] args) {
 		MutexCode n1 = new MutexCode(); // Initialize class
 
-		File config_file = new File("SampleInput.txt");
+		File config_file = new File("/home/010/r/rx/rxs131130/TestProj/CS6378_Project3-master/roucairolCaravalho/SampleInput.txt");
 		// Check if configuration file is available
 		if (config_file.exists() == true) {
 			System.out.println("Configuration file for input found.");
@@ -120,7 +119,7 @@ public class MutexCode {
 		Thread t2 = new Thread(new Runnable() {
 			public void run() {
 				try {
-					Thread.sleep(100);
+					Thread.sleep(2000);
 					for(int i= 0; i<nodeNeighborsArray.length; i++) {
 						for(int j = 0; j<info_nodes.length; j++) {
 							if(info_nodes[j][0].equals(nodeNeighborsArray[i])) {
@@ -185,8 +184,8 @@ public class MutexCode {
 
 						// Assign node ID, host name, and port
 						info_nodes[lineCount][0] = temp_splitarr[0].trim(); // node ID 
-						//info_nodes[lineCount][1] = temp_splitarr[1].trim() + ".utdallas.edu"; // host name
-						info_nodes[lineCount][1] = temp_splitarr[1].trim(); // host name
+						info_nodes[lineCount][1] = temp_splitarr[1].trim() + ".utdallas.edu"; // host name
+						//info_nodes[lineCount][1] = temp_splitarr[1].trim(); // host name
 						info_nodes[lineCount][2] = temp_splitarr[2].trim(); // port
 						info_nodes[lineCount][3] = temp_neighbors.replace(info_nodes[lineCount][0], "").replaceAll(" +", " ").trim(); // all other nodes are neighbors 
 												
@@ -218,7 +217,7 @@ public class MutexCode {
 				/* Array to store each client accepted */
 				socClientsArray.add(soc);
 				counter++;
-				/* If all the neighbors according to the config file were accepted by this node 
+				/* If all the neighbors according to the file were accepted by this node 
 				 * Broadcast Messages to all neighbors and receive their messages */
 				if(counter == nodeNeighborsNumber){
 					for(int i = 0; i<num_req; i++) {
