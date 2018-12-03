@@ -265,7 +265,8 @@ public class MutexCode {
 							if(grantCond1 || grantCond2 || grantCond3) {
 								DataOutputStream dos = new DataOutputStream(clientSocket.getOutputStream());
 								long t = System.currentTimeMillis();
-								dos.writeUTF("Granted "+ t);
+								dos.writeUTF("Granted "+ t+" "+nodeNumber);
+								totalCounterDec();
 				 			} else {
 								Requests newReq = new Requests(clientSocket, Long.parseLong(msgSplit[2]));
 								requestsReceived.add(newReq);  //Add in the priority queue if cannot grant permission
@@ -299,11 +300,12 @@ public class MutexCode {
 					dos.writeUTF("Request "+ nodeNumber +" "+ selfReqTime);
 					DataInputStream dis = new DataInputStream(s.getInputStream());
 					String msgRcvd = dis.readUTF();
-					//System.out.println("msgRcvd "+ msgRcvd + " by "+ s);
+					System.out.println("Reply : " + msgRcvd);
 					String[] msgRcvdArray = msgRcvd.split(" ");
 					if(msgRcvdArray[0].equals("Granted")) {
 						repliesReceived.add(s);
 						repliesET.add((Long.parseLong(msgRcvdArray[1])));
+						totalCounterDec();
 					}
 				} catch (IOException e) {
 					e.printStackTrace();
@@ -323,7 +325,8 @@ public class MutexCode {
 			DataOutputStream dos;
 			try {
 				dos = new DataOutputStream((s.getRequest()).getOutputStream());
-				dos.writeUTF("Granted "+t);
+				dos.writeUTF("Granted "+t+" "+nodeNumber+" LEFT CS");
+				totalCounterDec();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -333,11 +336,11 @@ public class MutexCode {
 	/* Handles Mutual Exclusion cases*/
 	public synchronized void mutexService(boolean inCS, boolean reEnter) {
 		try {
+			long t1 = System.currentTimeMillis();
 			//cases to check whether collision occurs
-			if(reEnter){
+			/*if(reEnter){
 				System.out.println("Re enter");
 			} else {
-				long t1 = System.currentTimeMillis();
 				for(long l1:repliesET) {
 					if(t1<=l1) {
 						System.out.println("Collision " + t1 +" "+l1);
@@ -345,8 +348,8 @@ public class MutexCode {
 						System.out.println("No Collision " + t1 +" "+l1);
 					}
 				}
-			}
-			System.out.println("In CS "+nodeNumber + " " + msgCounter);
+			}*/
+			System.out.println("In CS "+nodeNumber + " " + msgCounter + " at time "+ t1);
 			
 			//sleep time in Critical Section
 			Thread.sleep(mean_cs_exe_time);
@@ -360,6 +363,13 @@ public class MutexCode {
 			csLeave(t2);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
+		}
+	}
+	
+	public void totalCounterDec() {
+		synchronized(this) {
+			totalCounter--;
+			//System.out.println("totalCounter " + totalCounter);
 		}
 	}
 }
