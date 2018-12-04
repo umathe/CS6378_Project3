@@ -377,7 +377,7 @@ public class MutexCode {
 			clearPQ.add(s);
 			DataOutputStream dos;
 			try {
-				System.out.println("Request in cs leave "+s.getTS());
+				//System.out.println("Request in cs leave "+s.getTS());
 				dos = new DataOutputStream((s.getRequest()).getOutputStream());
 				dos.writeUTF("Granted "+t+" "+nodeNumber+" LEFT CS");
 			} catch (IOException e) {
