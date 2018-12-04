@@ -16,7 +16,7 @@ import java.util.Arrays;
 import java.util.PriorityQueue;
 import java.util.concurrent.CountDownLatch;
 
-public class MutexCode4 {
+public class MutexCode {
 
 	/*
 	 * Initialize local variables. Each dc machine (node) will have a unique
@@ -84,7 +84,7 @@ public class MutexCode4 {
 		 * Identify node # running code. Configuration file information is partially
 		 * extracted according to the node number.
 		 */
-      for (int i = 0; i < info_nodes.length; i++) {
+      		for (int i = 0; i < info_nodes.length; i++) {
 			if (info_nodes[i][1].equals(nodeHostName)) { // Match node based on host name
 				nodeNumber = Integer.parseInt(info_nodes[i][0]);
 				nodePortNumber = Integer.parseInt(info_nodes[i][2]);
