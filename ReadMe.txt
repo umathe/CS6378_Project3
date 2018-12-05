@@ -13,11 +13,11 @@ Code compilation instructions (Windows):
 
 3. Create SampleInput.txt file in PuTTY and copy the contents of the configuration file. Save SampleInput.txt.
 
-4. Create ComparatorForTS.java, MutexCode.java, and Requests.java files in PuTTY and copy the contents of the submitted java files respectively.
+4. Create ComparatorForTS.java, NewMutexCode.java, and Requests.java files in PuTTY and copy the contents of the submitted java files respectively.
 
-5. Compile code using the following commands: javac ComparatorForTS.java, javac MutexCode.java, and javac Requests.java
+5. Compile code using the following commands: javac ComparatorForTS.java, javac NewMutexCode.java, and javac Requests.java
 
-6. Run code in each PuTTY instance. Use the following command: java MutexCode
+6. Run code in each PuTTY instance. Use the following command: java NewMutexCode
 
 ------------------------------------------
 
@@ -31,7 +31,7 @@ Code compilation instructions (Mac/Linux):
 
 4. Save config file in "launcher" folder. 
 
-5. Compile code in DC machine using the following commands: javac ComparatorForTS.java, javac MutexCode.java, and javac Requests.java
+5. Compile code in DC machine using the following commands: javac ComparatorForTS.java, javac NewMutexCode.java, and javac Requests.java
 
 6. In the home machine, run the launcher script (command: ./launcher.sh) and cleanup script (./cleanup.sh).
 
