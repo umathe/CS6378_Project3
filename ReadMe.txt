@@ -39,7 +39,9 @@ Code compilation instructions (Mac/Linux):
 
 Performance Analysis:
 -----
-The system throughput (milliseconds) is captured for each node after all required number of requests have been completed. Each test instance will have varying number of nodes, inter-request delay (milliseconds), cs-execution time (milliseconds), and number of requests to test various system parameters' effect on the performance of the program. 
+The system throughput (milliseconds) is captured for each node after all required number of requests have been completed. Each test
+instance will have varying number of nodes, inter-request delay (milliseconds), cs-execution time (milliseconds), and number of requests
+to test various system parameters' effect on the performance of the program. 
 
 Assumption:
 -----
