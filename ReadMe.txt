@@ -39,10 +39,10 @@ Code compilation instructions (Mac/Linux):
 
 Performance Analysis:
 -----
-The system throughput (milliseconds) is captured for each node after all required number of requests have been completed. The average is taken of that single program execution
-and noted as a single test instance. Each test instance will have varying number of nodes, inter-request delay (milliseconds), cs-execution time (milliseconds), and number of requests
-to test various system parameters' effect on the performance of the program. 
+The system throughput (milliseconds) is captured for each node after all required number of requests have been completed. Each test instance will have varying number of nodes, inter-request delay (milliseconds), cs-execution time (milliseconds), and number of requests to test various system parameters' effect on the performance of the program. 
 
+Assumption:
+-----
 System throughput was chosen as the single variable to measure performance because the others provided would not produce valid comparisons due to how the program was implemented and for
 the following reasons:
 1. Message complexity is an invalid measure since the context of the message is hardcoded in the program. There are unique messages depending on its type and usage such as for REQUEST and GRANT.
@@ -51,3 +51,9 @@ the following reasons:
 2. Response time is also considered an invalid measure. This is because the inter-request delay (milliseconds) variable provided directly influences the response time of the program while being
    utilized as a means to compare the performance of the program. In this regard, inter-request delay will practically be measured twice for the overall comparison which can skew the results and bias
    any conclusions made about the data. 
+
+Results:
+-----
+Please reference the Project3-Performance Analysis workbook for the graph and raw data. The number of requests were kept constant at 1000. As such, only inter-request delay, cs-execution time, and number of nodes were chosen as the system parameters for testing.
+
+After analysis was done, it was discovered that cs-execution time had the most direct effect on overall system performance. Conclusions may naturally be made that there was a linear increase in the system throughput due to the amount of time required to execute the critial section for a constant number of requests. Though inter-request delay appeared to have some effect, it was minimal since by nature of this protocol, if one node is delayed, another may jump in for execution. 
