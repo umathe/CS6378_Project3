@@ -54,6 +54,10 @@ the following reasons:
 
 Results:
 -----
-Please reference the Project3-Performance Analysis workbook for the graph and raw data. The number of requests were kept constant at 1000. As such, only inter-request delay, cs-execution time, and number of nodes were chosen as the system parameters for testing.
+Please reference the Project3-Performance Analysis workbook for the graph and raw data. The number of requests were kept constant at
+1000. As such, only inter-request delay, cs-execution time, and number of nodes were chosen as the system parameters for testing.
 
-After analysis was done, it was discovered that cs-execution time had the most direct effect on overall system performance. Conclusions may naturally be made that there was a linear increase in the system throughput due to the amount of time required to execute the critial section for a constant number of requests. Though inter-request delay appeared to have some effect, it was minimal since by nature of this protocol, if one node is delayed, another may jump in for execution. 
+After analysis was done, it was discovered that cs-execution time had the most direct effect on overall system performance. Conclusions
+may naturally be made that there was a linear increase in the system throughput due to the amount of time required to execute the
+critial section for a constant number of requests. Though inter-request delay appeared to have some effect, it was minimal since by
+nature of this protocol, if one node is delayed, another may jump in for execution.
