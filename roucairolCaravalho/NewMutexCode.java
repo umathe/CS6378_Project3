@@ -48,7 +48,9 @@ public class MutexCode {
 	static long selfReqTime = 0;
 	static int msgCounter = 0;
 	static int finalCounter;
+	static int doneCounter = 0;
 	static long startTime, endTime, duration;
+	static Socket socc = null;
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// MAIN
@@ -108,6 +110,7 @@ public class MutexCode {
 
 			System.out.println("\n--------------------------------------\n");
 		}
+		
 		nodeNeighborsArray = nodeNeighbors.split(" ");
 		finalCounter = num_req + (num_nodes-1);
 		startTime = System.currentTimeMillis();
@@ -131,7 +134,7 @@ public class MutexCode {
 		Thread t2 = new Thread(new Runnable() {
 			public void run() {
 				try {
-					Thread.sleep(2000);
+					Thread.sleep(5000);
 					int connectingClient = 0;
 					for(int i= 0; i<nodeNeighborsArray.length; i++) {
 						for(int j = 0; j<info_nodes.length; j++) {
@@ -140,7 +143,6 @@ public class MutexCode {
 							}
 						}
 					}
-					System.out.println("All clients connected "+connectingClient);
 					if(connectingClient == nodeNeighborsArray.length) {
 						clientCompletion[0]=true;
 					}
@@ -163,6 +165,9 @@ public class MutexCode {
 						try {
 							//Request to enter CS after certain delay
 							Thread.sleep(mean_inter_request_delay);
+							selfReqTime = System.currentTimeMillis();
+							Requests newReq = new Requests(socc, selfReqTime);
+							requestsReceived.add(newReq);
 							csEnter();
 						} catch (InterruptedException e) {
 							e.printStackTrace();
@@ -172,9 +177,26 @@ public class MutexCode {
 					continueAttempt = false;
 				}
 			}
+			while(true & doneCounter < num_nodes) {
+				if(doneCounter == num_nodes-1) {
+					for (Iterator i = requestsReceived.iterator(); i.hasNext();) {
+						Requests itrReq = (Requests) i.next();
+						if(itrReq.reqStatus == false) {
+							csEnter();
+						}
+					}
+					if(finalCounter == 0) {
+						endTime = System.currentTimeMillis();
+						duration = (endTime - startTime);
+						System.out.println("Total Duration for node "+ nodeNumber+ " is "+duration);
+					}
+					break;
+				}
+			}
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
+		
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -225,8 +247,8 @@ public class MutexCode {
 
 						// Assign node ID, host name, and port
 						info_nodes[lineCount][0] = temp_splitarr[0].trim(); // node ID 
-						info_nodes[lineCount][1] = temp_splitarr[1].trim() + ".utdallas.edu"; // host name
-						//info_nodes[lineCount][1] = temp_splitarr[1].trim(); // host name
+						//info_nodes[lineCount][1] = temp_splitarr[1].trim() + ".utdallas.edu"; // host name
+						info_nodes[lineCount][1] = temp_splitarr[1].trim(); // host name
 						info_nodes[lineCount][2] = temp_splitarr[2].trim(); // port
 						info_nodes[lineCount][3] = temp_neighbors.replace(info_nodes[lineCount][0], "").replaceAll(" +", " ").trim(); // all other nodes are neighbors 
 												
@@ -254,7 +276,6 @@ public class MutexCode {
 		while(true) {
 			try {				
 				Socket soc = ssoc.accept();
-				System.out.println("Server accepts "+soc);
 				/* Array to store each client accepted */
 				socClientsArray.add(soc);
 				counter++;
@@ -287,16 +308,15 @@ public class MutexCode {
 					DataInputStream dis = new DataInputStream(clientSocket.getInputStream());
 					latch.countDown();
 					//receive messages from the server after connection
-					while(true && finalCounter > 0) {
+					while(true && doneCounter < num_nodes-1) {
 						try {
 							String msgRcvd = dis.readUTF();
 							String[] msgSplit = msgRcvd.split(" ");
 							//basic conditions to grant permission to a requesting node to enter the CS
-							boolean grantCond1 = (inCriticalSection == false && selfReq == false);
-							boolean grantCond2 = (inCriticalSection == false && selfReq == true && selfReqTime > Long.parseLong(msgSplit[2]));
-							boolean grantCond3 = (inCriticalSection == false && selfReq == true && selfReqTime == Long.parseLong(msgSplit[2]) && Integer.parseInt(msgSplit[1]) < nodeNumber);
-							System.out.println("msgRcvd "+msgRcvd);
 							if(msgSplit[0].equals("Request")) {
+								boolean grantCond1 = (inCriticalSection == false && selfReq == false);
+								boolean grantCond2 = (inCriticalSection == false && selfReq == true && selfReqTime > Long.parseLong(msgSplit[2]));
+								boolean grantCond3 = (inCriticalSection == false && selfReq == true && selfReqTime == Long.parseLong(msgSplit[2]) && Integer.parseInt(msgSplit[1]) < nodeNumber);
 								if(grantCond1 || grantCond2 || grantCond3) {
 									DataOutputStream dos = new DataOutputStream(clientSocket.getOutputStream());
 									long t = System.currentTimeMillis();
@@ -307,18 +327,12 @@ public class MutexCode {
 								}
 							} else if(msgSplit[0].equals("Done")) {
 								finalCounter--;
+								doneCounter++;
 							}
 						}  catch (EOFException e1) {
 							dis.close();
 							clientSocket.close();
 						} 
-					}
-					dis.close();
-					clientSocket.close();
-					if(finalCounter == 0) {
-						endTime = System.currentTimeMillis();
-						duration = (endTime - startTime);
-						System.out.println("Total Duration for node "+ nodeNumber+ " is "+duration);
 					}
 				} catch (SocketException e) {
 					System.out.println(e);
@@ -338,55 +352,107 @@ public class MutexCode {
 	
 	/* Method to request permission to enter CS */
 	public static void csEnter() {
-		//if no requests received since the last time you entered CS then directly access the CS
-		if(requestsReceived.size() == 0 && repliesReceived.size() == socClientsArray.size()) {
-			mutexService(true, true);
-		} else {						//	else ask permission from the neighbors to enter CS
-			repliesReceived.clear();
-			repliesET.clear();
-			selfReq = true;
-			selfReqTime = System.currentTimeMillis();
-			for(Socket s:socClientsArray) {
-				try {
-					DataOutputStream dos = new DataOutputStream(s.getOutputStream());
-					dos.writeUTF("Request "+ nodeNumber +" "+ selfReqTime);
-					DataInputStream dis = new DataInputStream(s.getInputStream());
-					String msgRcvd = dis.readUTF();
-					System.out.println("Reply : " + msgRcvd);
-					String[] msgRcvdArray = msgRcvd.split(" ");
-					if(msgRcvdArray[0].equals("Granted")) {
-						repliesReceived.add(s);
-						repliesET.add((Long.parseLong(msgRcvdArray[1])));
+		
+		Iterator value = requestsReceived.iterator();
+		Requests prevReq = null;
+		
+		while (value.hasNext()) {
+			Requests itrReq = (Requests) value.next();
+			if(itrReq.reqStatus == false) {
+				boolean isprevReq = (prevReq != null);
+				if(isprevReq) {
+					if(prevReq.soc == itrReq.soc){
+						mutexService(true, true);
+					} else {
+						repliesReceived.clear();
+						repliesET.clear();
+						selfReq = true;
+						selfReqTime = System.currentTimeMillis();
+						for(Socket s:socClientsArray) {
+							try {
+								DataOutputStream dos = new DataOutputStream(s.getOutputStream());
+								dos.writeUTF("Request "+ nodeNumber +" "+ selfReqTime);
+							} catch (IOException e) {
+								e.printStackTrace();
+							}
+						}
+						for(Socket s:socClientsArray) {
+							try {
+								DataInputStream dis = new DataInputStream(s.getInputStream());
+								String msgRcvd = dis.readUTF();
+								System.out.println("Reply : " + msgRcvd);
+								String[] msgRcvdArray = msgRcvd.split(" ");
+								if(msgRcvdArray[0].equals("Granted")) {
+									repliesReceived.add(s);
+									repliesET.add((Long.parseLong(msgRcvdArray[1])));
+								}
+							} catch (IOException e) {
+								e.printStackTrace();
+							}
+						}
+						//if all neighbors grant permission then enter CS
+						if(repliesReceived.size()==socClientsArray.size()) {
+							mutexService(true, false);
+						}
 					}
-				} catch (IOException e) {
-					e.printStackTrace();
+				} else {
+					selfReq = true;
+					selfReqTime = System.currentTimeMillis();
+					for(Socket s:socClientsArray) {
+						try {
+							DataOutputStream dos = new DataOutputStream(s.getOutputStream());
+							dos.writeUTF("Request "+ nodeNumber +" "+ selfReqTime);
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+					}
+					for(Socket s:socClientsArray) {
+						try {
+							DataInputStream dis = new DataInputStream(s.getInputStream());
+							String msgRcvd = dis.readUTF();
+							System.out.println("Reply : " + msgRcvd);
+							String[] msgRcvdArray = msgRcvd.split(" ");
+							if(msgRcvdArray[0].equals("Granted")) {
+								repliesReceived.add(s);
+								repliesET.add((Long.parseLong(msgRcvdArray[1])));
+							}
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+					}
+					//if all neighbors grant permission then enter CS
+					if(repliesReceived.size()==socClientsArray.size()) {
+						mutexService(true, false);
+					}
 				}
+				break;
 			}
-			//if all neighbors grant permission then enter CS
-			if(repliesReceived.size()==socClientsArray.size()) {
-				mutexService(true, false);
-			}
+			prevReq = new Requests(itrReq.soc, itrReq.ts);
 		}
 	}
 	
 	/* Method to send reply done with CS */
 	public synchronized static void csLeave(long t) {
 		//on leaving CS, grant permission to all the requesting nodes
-		ArrayList<Requests> clearPQ = new ArrayList<Requests>();
-		for(Requests s:requestsReceived) {
-			clearPQ.add(s);
-			DataOutputStream dos;
-			try {
-				//System.out.println("Request in cs leave "+s.getTS());
-				dos = new DataOutputStream((s.getRequest()).getOutputStream());
-				dos.writeUTF("Granted "+t+" "+nodeNumber+" LEFT CS");
-			} catch (IOException e) {
-				e.printStackTrace();
+		Iterator value = requestsReceived.iterator(); 
+		 
+        while (value.hasNext()) {
+        	Requests itrReq = (Requests) value.next();
+			if(itrReq.reqStatus == false) {
+				if(itrReq.soc == socc) {
+					itrReq.reqStatus = true;
+				} else {
+					DataOutputStream dos;
+					try {
+						dos = new DataOutputStream((itrReq.getRequest()).getOutputStream());
+						dos.writeUTF("Granted "+t+" "+nodeNumber+" LEFT CS");
+						itrReq.reqStatus = true;
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
 			}
-		}
-		for(Requests s:clearPQ) {
-			requestsReceived.remove(s);
-		}
+        }
 	}
 	
 	/* Handles Mutual Exclusion cases*/
@@ -394,6 +460,18 @@ public class MutexCode {
 		try {
 			long t1 = System.currentTimeMillis();
 			//cases to check whether collision occurs
+			if(reEnter){
+				System.out.println("Re enter");
+			} else {
+				for(long l1:repliesET) {
+					if(t1<=l1) {
+						System.out.println("Collision " + t1 +" "+l1);
+					} else {
+						System.out.println("No Collision " + t1 +" "+l1);
+					}
+				}
+			}
+			
 			System.out.println("In CS "+nodeNumber + " " + msgCounter + " at time "+ t1);
 			
 			//sleep time in Critical Section
