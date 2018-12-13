@@ -178,6 +178,7 @@ public class MutexCode {
 				}
 			}
 			while(true & doneCounter < num_nodes) {
+				System.out.print("-");
 				if(doneCounter == num_nodes-1) {
 					for (Iterator i = requestsReceived.iterator(); i.hasNext();) {
 						Requests itrReq = (Requests) i.next();
@@ -464,7 +465,7 @@ public class MutexCode {
 				System.out.println("Re enter");
 			} else {
 				for(long l1:repliesET) {
-					if(t1<=l1) {
+					if(t1<l1) {
 						System.out.println("Collision " + t1 +" "+l1);
 					} else {
 						System.out.println("No Collision " + t1 +" "+l1);
