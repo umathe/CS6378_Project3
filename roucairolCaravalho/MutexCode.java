@@ -247,8 +247,8 @@ public class MutexCode {
 
 						// Assign node ID, host name, and port
 						info_nodes[lineCount][0] = temp_splitarr[0].trim(); // node ID 
-						//info_nodes[lineCount][1] = temp_splitarr[1].trim() + ".utdallas.edu"; // host name
-						info_nodes[lineCount][1] = temp_splitarr[1].trim(); // host name
+						info_nodes[lineCount][1] = temp_splitarr[1].trim() + ".utdallas.edu"; // host name
+						//info_nodes[lineCount][1] = temp_splitarr[1].trim(); // host name
 						info_nodes[lineCount][2] = temp_splitarr[2].trim(); // port
 						info_nodes[lineCount][3] = temp_neighbors.replace(info_nodes[lineCount][0], "").replaceAll(" +", " ").trim(); // all other nodes are neighbors 
 												
